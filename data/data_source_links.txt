@@ -1,0 +1,5 @@
+IMD2019 csv for England and Wales:
+https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/840424/File_7_-_All_IoD2019_Scores__Ranks__Deciles_and_Population_Denominators_1.csv
+
+LSOA 2011 shapefile .zip file:
+https://opendata.arcgis.com/datasets/da831f80764346889837c72508f046fa_3.zip?outSR=%7B%22latestWkid%22%3A27700%2C%22wkid%22%3A27700%7D
