@@ -1,0 +1,3 @@
+# names(top10.list.sf) <- paste0(top10, ".sf")
+# list2env(top10.list.sf, envir = .GlobalEnv)
+# top10 <- paste0(top10, ".sf")

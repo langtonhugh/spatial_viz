@@ -1,3 +1,5 @@
+# 1 - setup
+
 dir.create("data")
 dir.create("scripts")
 dir.create("visuals")

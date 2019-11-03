@@ -3,3 +3,6 @@ https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attac
 
 LSOA 2011 shapefile .zip file:
 https://opendata.arcgis.com/datasets/da831f80764346889837c72508f046fa_3.zip?outSR=%7B%22latestWkid%22%3A27700%2C%22wkid%22%3A27700%7D
+
+LSOA level population estimates:
+https://www.ons.gov.uk/peoplepopulationandcommunity/populationandmigration/populationestimates/datasets/lowersuperoutputareamidyearpopulationestimates
