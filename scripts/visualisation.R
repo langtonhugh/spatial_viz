@@ -15,7 +15,7 @@ ryb <- brewer_pal(palette = "RdYlBu")(10)
 
 myplot <- function(data){
   ggplot(data) +
-    geom_sf(aes(fill = IMD19rank), colour = "white", size = 0.01)  +
+    geom_sf(aes(fill = IMD19rank), colour = "white", size = 1)  +
     scale_fill_manual(values = ryb) + 
     theme_void() +
     theme(panel.grid.major = element_line(colour = "transparent"),
@@ -288,7 +288,7 @@ manc_bir_leg <- plot_grid(manc_bir, p1, nrow = 2, rel_heights = c(1,0.17), scale
   theme(panel.background = element_rect(fill = "grey12", colour = "grey12"))
 
 ggsave(manc_bir_leg, filename = "visuals/manc_birm_triplets.png",
-       height = 16, width = 16, device = "png", dpi = 300)
+       height = 16, width = 16, device = "png", dpi = 400)
 
 # Burnley and Hartelpool
 burn_har <- plot_grid(NULL               , origtitle            , dorltitle            , geogtitle           ,
@@ -308,24 +308,63 @@ burn_har_leg <- plot_grid(burn_har, p1, nrow = 2, rel_heights = c(1,0.17), scale
   theme(panel.background = element_rect(fill = "grey12", colour = "grey12"))
 
 ggsave(burn_har_leg, filename = "visuals/burn_har_triplets.png",
-       height = 16, width = 16, device = "png", dpi = 300)
+       height = 16, width = 16, device = "png", dpi = 400)
 
-# Blackpool and Liverpool
-blac_liv <- plot_grid(NULL               , origtitle            , dorltitle            , geogtitle           ,
-                      Blackpool_labs     , Blackpool_orig_gg    , Blackpool_dorl_gg    , Blackpool_hex_gg    ,
-                      Liverpool_labs     , Liverpool_orig_gg    , Liverpool_dorl_gg    , Liverpool_hex_gg    ,  
-                      ncol = 4,
-                      scale = c(1,1,1,1,
-                                1,1,1,1,
-                                1,1,1,1),
-                      rel_widths  = c(0.1,1,1,1),
-                      rel_heights = c(0.3,1,1,1,
-                                      1,1,1,1,
-                                      1,1,1,1)) +
+# Blackpool
+bla <- plot_grid(NULL           , origtitle              , dorltitle             , geogtitle           ,
+                 Blackpool_labs , Blackpool_orig_gg      , Blackpool_dorl_gg     , Blackpool_hex_gg    ,
+                 ncol = 4,
+                 rel_widths  = c(0.1,1,1,1,
+                                 0.1,1,1,1),
+                 rel_heights = c(0.3,1,1,1,
+                                 1,1,1,1)) +
   theme(panel.background = element_rect(fill = "grey12", colour = "grey12"))
 
-blac_liv_leg <- plot_grid(blac_liv, p1, nrow = 2, rel_heights = c(1,0.17), scale = c(1,0.5))  +
+bla_leg <- plot_grid(bla, p1, nrow = 2, rel_heights = c(1,0.23), scale = c(1,0.5))  +
   theme(panel.background = element_rect(fill = "grey12", colour = "grey12"))
 
-ggsave(blac_liv_leg, filename = "visuals/blac_liv_triplets.png",
-       height = 16, width = 16, device = "png", dpi = 300)
+ggsave(bla_leg, filename = "visuals/bla_triplets.png",
+       height = 12, width = 16, device = "png", dpi = 400)
+
+# Calcuating areas
+
+prop.table(table(Middlesbrough_sf$IMD19rank))
+
+# total area of Middlesbrough
+total.vec <- sum(Middlesbrough_sf$st_areasha)
+
+# areal proportion of Middlesbrough consisting of nhoods in each decile
+total.vec <- sum(Middlesbrough_sf$st_areasha)
+Middlesbrough_sf %>%
+  as_tibble() %>% 
+  group_by(IMD19rank) %>% 
+  summarise(sum_area = sum(st_areasha)) %>% 
+  mutate(prop_area = 100*(sum_area/total.vec))
+
+names(top10.dorl.list.sf) <- paste0(labs,"_dorl")
+list2env(top10.dorl.list.sf, envir = .GlobalEnv)
+
+total.dorl.vec <- sum(Middlesbrough_dorl$st_areasha)
+Middlesbrough_dorl %>%
+  mutate(st_areasha_dorl = st_area(Middlesbrough_dorl)) %>% 
+  as_tibble() %>% 
+  group_by(IMD19rank) %>% 
+  summarise(sum_area = sum(st_areasha_dorl)) %>% 
+  mutate(prop_area = 100*(sum_area/total.dorl.vec))
+
+
+names(hex_list) <- paste0(labs,"_hex")
+list2env(hex_list, envir = .GlobalEnv)
+
+total.hex.vec <- sum(Middlesbrough_hex$st_areasha)
+Middlesbrough_hex %>%
+  mutate(st_areasha_hex = st_area(Middlesbrough_hex)) %>% 
+  as_tibble() %>% 
+  group_by(IMD19rank) %>% 
+  summarise(sum_area = sum(st_areasha_hex)) %>% 
+  mutate(prop_area = 100*(sum_area/total.hex.vec))
+
+
+
+
+
