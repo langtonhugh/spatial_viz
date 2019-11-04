@@ -328,37 +328,41 @@ ggsave(bla_leg, filename = "visuals/bla_triplets.png",
 
 # Calcuating areas
 
-prop.table(table(Middlesbrough_sf$IMD19rank))
+# actual proportional split
+prop.table(table(Blackpool_sf$IMD19rank))
 
-# total area of Middlesbrough
-total.vec <- sum(Middlesbrough_sf$st_areasha)
+# total area of Blackpool
+total.vec <- sum(Blackpool_sf$st_areasha)
+#test <- sum(as.numeric(st_area(Blackpool_sf)))
 
-# areal proportion of Middlesbrough consisting of nhoods in each decile
-total.vec <- sum(Middlesbrough_sf$st_areasha)
-Middlesbrough_sf %>%
+# areal proportion of Blackpool consisting of nhoods in each decile
+Blackpool_sf %>%
   as_tibble() %>% 
   group_by(IMD19rank) %>% 
   summarise(sum_area = sum(st_areasha)) %>% 
   mutate(prop_area = 100*(sum_area/total.vec))
 
-names(top10.dorl.list.sf) <- paste0(labs,"_dorl")
+# note the following is hacky: this outputs Manchester_sf etc objects into the global
+# environment, but they actually the dorling sf objects. This overwrites the raw boundary sf objects.
 list2env(top10.dorl.list.sf, envir = .GlobalEnv)
 
-total.dorl.vec <- sum(Middlesbrough_dorl$st_areasha)
-Middlesbrough_dorl %>%
-  mutate(st_areasha_dorl = st_area(Middlesbrough_dorl)) %>% 
+# Calculate the areal sum of the whole map
+total.vec.dorl <- as.numeric(sum(st_area(Blackpool_sf)))
+
+Blackpool_sf %>%
+  mutate(st_areasha_dorl = as.numeric(st_area(Blackpool_sf))) %>% 
   as_tibble() %>% 
   group_by(IMD19rank) %>% 
   summarise(sum_area = sum(st_areasha_dorl)) %>% 
-  mutate(prop_area = 100*(sum_area/total.dorl.vec))
+  mutate(prop_dorl_area = 100*(sum_area/total.vec.dorl)) 
 
-
-names(hex_list) <- paste0(labs,"_hex")
+# note the following is hacky: this outputs Manchester_sf etc objects into the global
+# environment, but they actually the geogrid sf objects. This overwrites the raw boundary sf objects.
 list2env(hex_list, envir = .GlobalEnv)
 
-total.hex.vec <- sum(Middlesbrough_hex$st_areasha)
-Middlesbrough_hex %>%
-  mutate(st_areasha_hex = st_area(Middlesbrough_hex)) %>% 
+total.hex.vec <- sum(Blackpool_hex$st_areasha)
+Blackpool_hex %>%
+  mutate(st_areasha_hex = st_area(Blackpool_hex)) %>% 
   as_tibble() %>% 
   group_by(IMD19rank) %>% 
   summarise(sum_area = sum(st_areasha_hex)) %>% 
