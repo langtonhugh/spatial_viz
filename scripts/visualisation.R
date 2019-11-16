@@ -15,7 +15,7 @@ ryb <- brewer_pal(palette = "RdYlBu")(10)
 
 myplot <- function(data){
   ggplot(data) +
-    geom_sf(aes(fill = IMD19rank), colour = "white", size = 1)  +
+    geom_sf(aes(fill = IMD19rank), colour = "white", size = 0.2)  +
     scale_fill_manual(values = ryb) + 
     theme_void() +
     theme(panel.grid.major = element_line(colour = "transparent"),
@@ -129,7 +129,7 @@ subtitle2 <- ggdraw() + draw_label("the top ten most deprived Local Authorities"
 
 caption1 <- ggdraw() + draw_label("Top 10 most deprived Local Authorities determined by the percentage of Lower Super Output Areas classified into the first decile.",
                                    colour = "white", size = 14, hjust = 0.5, fontfamily = "mono")
-caption2 <- ggdraw() + draw_label("Deprivation data and raw spatial boundaries obtained from the Office for National Statistics (2019) under Open Government Licence.",
+caption2 <- ggdraw() + draw_label("Deprivation data from the Office for National Statistics (2019). Contains OS Data © Crown copyright 2019.",
                                   colour = "white", size = 14, hjust = 0.5, fontfamily = "mono")
 caption3 <- ggdraw() + draw_label("@sh_langton",
                                   colour = "white", size = 26, hjust = 0.5, fontfamily = "mono")
@@ -138,7 +138,7 @@ caption3 <- ggdraw() + draw_label("@sh_langton",
 
 
 
-# Arrange maps
+# # Arrange maps
 threes_cow <-   plot_grid(NULL               , origtitle            , dorltitle            , geogtitle            ,
                           Middlesbrough_labs , Middlesbrough_orig_gg, Middlesbrough_dorl_gg, Middlesbrough_hex_gg,
                           Liverpool_labs     , Liverpool_orig_gg    , Liverpool_dorl_gg    , Liverpool_hex_gg    ,
@@ -196,78 +196,6 @@ full_plot <- plot_grid(maintitle1,
 ggsave(full_plot, filename = "visuals/triplets.png",
        height = 32, width = 16, device = "png", dpi = 300)
 
-# -----------------------------------------------------------------------
-# Split triplets   ------------------------------------------------------
-# -----------------------------------------------------------------------
-
-# Extract elements from lists for arranging.
-names(orig_plot) <- paste0(labs,"_orig_gg")
-list2env(orig_plot, envir = .GlobalEnv)
-
-names(dorl_plot) <- paste0(labs,"_dorl_gg")
-list2env(dorl_plot, envir = .GlobalEnv)
-
-names(hex_plot) <- paste0(labs,"_hex_gg")
-list2env(hex_plot, envir = .GlobalEnv)
-
-# Arrange maps
-top_cow <-   plot_grid(NULL               , origtitle            , dorltitle            , geogtitle            ,
-                       Middlesbrough_labs , Middlesbrough_orig_gg, Middlesbrough_dorl_gg, Middlesbrough_hex_gg,
-                       Liverpool_labs     , Liverpool_orig_gg    , Liverpool_dorl_gg    , Liverpool_hex_gg    ,
-                       Knowsley_labs      , Knowsley_orig_gg     , Knowsley_dorl_gg     , Knowsley_hex_gg     ,
-                       Kingston_labs      , Kingston_orig_gg     , Kingston_dorl_gg     , Kingston_hex_gg     ,
-                       Manchester_labs    , Manchester_orig_gg   , Manchester_dorl_gg   , Manchester_hex_gg   ,
-                       ncol = 4,
-                       scale = c(1,1,1,1,
-                                 1,1,1,1,
-                                 1,1,1,1,
-                                 1,1,1,1,
-                                 1,0.8,0.8,0.8,
-                                 1.1,1.1,1.1,1.1),
-                       rel_widths  = c(0.1,1,1,1),
-                       rel_heights = c(0.3,1,1,1,
-                                       1,1,1,1,
-                                       1,1,1,1,
-                                       1,1,1,1,
-                                       1,1,1,1,
-                                       1,1,1,1)) +
-  theme(panel.background = element_rect(fill = "grey12", colour = "grey12"))
-
-bottom_cow <-   plot_grid(NULL               , origtitle            , dorltitle            , geogtitle           ,
-                          Blackpool_labs     , Blackpool_orig_gg    , Blackpool_dorl_gg    , Blackpool_hex_gg    ,
-                          Birmingham_labs    , Birmingham_orig_gg   , Birmingham_dorl_gg   , Birmingham_hex_gg   ,
-                          Burnley_labs       , Burnley_orig_gg      , Burnley_dorl_gg      , Burnley_hex_gg      ,
-                          Blackburn_labs     , Blackburn_orig_gg    , Blackburn_dorl_gg    , Blackburn_hex_gg    ,
-                          Hartlepool_labs    , Hartlepool_orig_gg   , Hartlepool_dorl_gg   , Hartlepool_hex_gg   ,   
-                          ncol = 4,
-                          scale = c(1,1,1,1,
-                                    1,1,1,1,
-                                    1,1,1,1,
-                                    1,0.7,0.7,0.6,
-                                    1,1,1,1,
-                                    1,0.8,0.8,0.7),
-                          rel_widths  = c(0.1,1,1,1),
-                          rel_heights = c(0.3,1,1,1,
-                                          1,1,1,1,
-                                          1,1,1,1,
-                                          1,1,1,1,
-                                          1,1,1,1,
-                                          1,1,1,1)) +
-  theme(panel.background = element_rect(fill = "grey12", colour = "grey12"))
-
-# Generate full plot with labels
-top_plot <- plot_grid(top_cow, p1, nrow = 2, rel_heights = c(1,0.17), scale = c(1,0.5))  +
-  theme(panel.background = element_rect(fill = "grey12", colour = "grey12"))
-
-bot_plot <- plot_grid(bottom_cow, p1, nrow = 2, rel_heights = c(1,0.17), scale = c(1,0.5))  +
-  theme(panel.background = element_rect(fill = "grey12", colour = "grey12"))
-
-# # Save as PNG
-ggsave(top_plot, filename = "visuals/top_triplets.png",
-       height = 16, width = 16, device = "png", dpi = 300)
-
-ggsave(bot_plot, filename = "visuals/bottom_triplets.png",
-       height = 16, width = 16, device = "png", dpi = 300)
 
 # -----------------------------------------------------------------------
 # One-off triplets   ------------------------------------------------------
@@ -287,8 +215,21 @@ manc_bir <-   plot_grid(NULL               , origtitle            , dorltitle   
 manc_bir_leg <- plot_grid(manc_bir, p1, nrow = 2, rel_heights = c(1,0.17), scale = c(1,0.5))  +
   theme(panel.background = element_rect(fill = "grey12", colour = "grey12"))
 
-ggsave(manc_bir_leg, filename = "visuals/manc_birm_triplets.png",
-       height = 16, width = 16, device = "png", dpi = 400)
+ggsave(manc_bir_leg, filename = "visuals/manc_birm_triplets.tiff",
+       height = 16, width = 16, device = "tiff", dpi = 500)
+
+# Stand-alone
+
+caption4 <- ggdraw() + draw_label("Lower Super Output Area deprivation deciles for England (2019). Dorling scale by resident population. Contains OS Data © Crown copyright 2019.",
+                                  colour = "white", size = 12, hjust = 0.5, fontfamily = "mono")
+caption5 <- ggdraw() + draw_label("@sh_langton",
+                                  colour = "white", size = 16, hjust = 0.5, fontfamily = "mono", fontface = "bold")
+
+manc_bir_leg <- plot_grid(manc_bir, p1, caption4, caption5, nrow = 4, rel_heights = c(1,0.17,0.02,0.03), scale = c(1,0.5,1,1))  +
+  theme(panel.background = element_rect(fill = "grey12", colour = "grey12"))
+
+ggsave(manc_bir_leg, filename = "visuals/manc_birm_triplets_png.png",
+       height = 16, width = 16, device = "png", dpi = 300)
 
 # Burnley and Hartelpool
 burn_har <- plot_grid(NULL               , origtitle            , dorltitle            , geogtitle           ,
@@ -307,8 +248,11 @@ burn_har <- plot_grid(NULL               , origtitle            , dorltitle     
 burn_har_leg <- plot_grid(burn_har, p1, nrow = 2, rel_heights = c(1,0.17), scale = c(1,0.5))  +
   theme(panel.background = element_rect(fill = "grey12", colour = "grey12"))
 
-ggsave(burn_har_leg, filename = "visuals/burn_har_triplets.png",
-       height = 16, width = 16, device = "png", dpi = 400)
+ggsave(burn_har_leg, filename = "visuals/burn_har_triplets.tiff",
+       height = 16, width = 16, device = "tiff", dpi = 500)
+
+
+
 
 # Blackpool
 bla <- plot_grid(NULL           , origtitle              , dorltitle             , geogtitle           ,
@@ -323,8 +267,8 @@ bla <- plot_grid(NULL           , origtitle              , dorltitle            
 bla_leg <- plot_grid(bla, p1, nrow = 2, rel_heights = c(1,0.23), scale = c(1,0.5))  +
   theme(panel.background = element_rect(fill = "grey12", colour = "grey12"))
 
-ggsave(bla_leg, filename = "visuals/bla_triplets.png",
-       height = 12, width = 16, device = "png", dpi = 400)
+ggsave(bla_leg, filename = "visuals/bla_triplets.tiff",
+       height = 12, width = 16, device = "tiff", dpi = 500)
 
 # Calcuating areas
 
