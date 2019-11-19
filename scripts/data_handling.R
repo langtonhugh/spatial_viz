@@ -144,5 +144,10 @@ Middlesbrough_hex <- assign_polygons(Middlesbrough_sf, Middlesbrough_grid)
 
 # Create list of these sf objects
 
-hex_plot <- list(Birmingham_hex, Blackburn_hex, Blackpool_hex, Burnley_hex, Hartlepool_hex,
+hex_list <- list(Birmingham_hex, Blackburn_hex, Blackpool_hex, Burnley_hex, Hartlepool_hex,
                  Kingston_hex, Knowsley_hex, Liverpool_hex, Manchester_hex, Middlesbrough_hex)
+
+
+# Save workspace to avoid re-generating the hex objects
+save.image("scripts/data_handling_workspace_v2.RData")
+
