@@ -90,16 +90,18 @@ geogtitle <- ggdraw() + draw_label("Geogrid" , colour = "white", size = 20, font
 ryb <- brewer_pal(palette = "RdYlBu")(10)
 p1 <- ggplot() + geom_tile(aes(x = ryb, fill = ryb, y = 1)) + 
   scale_fill_manual(values = ryb) + 
-  theme(panel.grid.major = element_line(colour = "transparent"),
-        axis.line = element_blank(),
+  theme(axis.line = element_blank(),
         axis.ticks = element_blank(),
         axis.text.y = element_blank(),
-        axis.text.x = element_text(colour = "white",family = "mono", size = 18,face = "bold"),
+        axis.text.x = element_text(colour = "white",family = "mono", size = 18, face = "bold"),
         axis.title = element_blank(),
         legend.position = "none",
-        panel.background = element_rect(fill = "grey12", colour = "grey12")) +
+        panel.background = element_rect(fill = "grey12", colour = "grey12"),
+        panel.grid.major = element_line(colour = "transparent"),
+        panel.grid.minor = element_line(colour = "transparent"),
+        plot.background  = element_rect(fill = "grey12", colour = "grey12")) +
   scale_x_discrete(labels = c(" 1 \n \n Most deprived","2","3","4","5",
-                              "6","7","8","9"," 10 \n \n Least deprived"))
+                              "6","7","8","9"," 10 \n \n Least deprived")) 
 
 # Generate labels
 titles <- c("Middlesbrough","Liverpool","Knowsley","Kingston","Manchester","Blackpool",
@@ -136,8 +138,6 @@ caption3 <- ggdraw() + draw_label("@sh_langton",
 
 
 
-
-
 # # Arrange maps
 threes_cow <-   plot_grid(NULL               , origtitle            , dorltitle            , geogtitle            ,
                           Middlesbrough_labs , Middlesbrough_orig_gg, Middlesbrough_dorl_gg, Middlesbrough_hex_gg,
@@ -161,7 +161,7 @@ threes_cow <-   plot_grid(NULL               , origtitle            , dorltitle 
                                     1,1,1,1,
                                     1,0.7,0.7,0.7,
                                     1,1,1,1,
-                                    1,0.8,0.8,0.7),
+                                    1,0.8,0.8,0.8),
                           rel_widths = c(0.1,1,1,1),
                           rel_heights = c(0.4,1,1,1,
                                           1,1,1,1,
@@ -193,8 +193,8 @@ full_plot <- plot_grid(maintitle1,
   theme(panel.background = element_rect(fill = "grey12", colour = "grey12"))
 
 # Save as PNG
-ggsave(full_plot, filename = "visuals/triplets.png",
-       height = 32, width = 16, device = "png", dpi = 300)
+ggsave(full_plot, filename = "visuals/triplets.jpeg",
+       height = 32, width = 16, device = "jpeg", dpi = 600)
 
 
 # -----------------------------------------------------------------------
