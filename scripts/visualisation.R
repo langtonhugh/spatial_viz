@@ -1,6 +1,6 @@
 # 3 - Visualisation
 
-load("scripts/data_handling_workspace_v2.RData")
+load("scripts/data_handling_vis_workspace.RData")
 
 library(cowplot)
 library(tidyverse)
@@ -9,13 +9,12 @@ library(scales)
 library(viridis)
 
 # ggplot function and defining colours
-spec <- brewer_pal(palette = "Spectral")(10)
-viri <- viridis::inferno(10)
-ryb <- brewer_pal(palette = "RdYlBu")(10)
+viri <- viridis::inferno(10) # colour blind friendly
+ryb <- brewer_pal(palette = "RdYlBu")(10) # main
 
 myplot <- function(data){
   ggplot(data) +
-    geom_sf(aes(fill = IMD19rank), colour = "white", size = 0.2)  +
+    geom_sf(aes(fill = IMD19rank), colour = "white", size = 0.1)  +
     scale_fill_manual(values = ryb) + 
     theme_void() +
     theme(panel.grid.major = element_line(colour = "transparent"),
@@ -30,44 +29,19 @@ orig_plot <- lapply(top10.list.sf, myplot)
 dorl_plot <- lapply(top10.dorl.list.sf, myplot)
 hex_plot  <- lapply(hex_list, myplot)
 
-# # Facet plot function
-# facet_function <- function(xlist){
-#           plot_grid(plotlist = xlist,
-#                     nrow = 2,
-#                     labels = c("Birmingham", "Blackburn", "Blackpool ", "Burnley","Hartlepool",
-#                                "Kingston"  ,"Knowsley", "Liverpool", "Manchester","Middlesbrough"),
-#                     hjust = 0, vjust = 5, label_colour = "white") +
-#     theme(panel.background = element_rect(fill = "grey12", colour = "grey12"))
-# }
-# 
-# # Run function on lists
-# orig_cowplot <- facet_function(orig_plot)
-# dorl_cowplot <- facet_function(dorl_plot)
-# hex_cowplot  <- facet_function(hex_plot)
-# 
-# # Save each as png
-# ggsave(orig_cowplot, filename = "visuals/top10_originals.png",
-#        height = 16, width = 22, device = "png")
-# 
-# ggsave(dorl_cowplot, filename = "visuals/top10_dorling_pop.png",
-#        height = 16, width = 22, device = "png")
-# 
-# ggsave(hex_cowplot, filename = "visuals/top10_geogrid.png",
-#        height = 16, width = 22, device = "png")
-
 # -----------------------------------------------------------------------
 # Poster style   --------------------------------------------------------
 # -----------------------------------------------------------------------
 
 # Extract elements from lists for arranging.
+
 names(orig_plot) <- paste0(labs,"_orig_gg")
-list2env(orig_plot, envir = .GlobalEnv)
-
 names(dorl_plot) <- paste0(labs,"_dorl_gg")
-list2env(dorl_plot, envir = .GlobalEnv)
+names(hex_plot)  <- paste0(labs,"_hex_gg")
 
-names(hex_plot) <- paste0(labs,"_hex_gg")
-list2env(hex_plot, envir = .GlobalEnv)
+list2env(orig_plot, envir = .GlobalEnv)
+list2env(dorl_plot, envir = .GlobalEnv)
+list2env(hex_plot , envir = .GlobalEnv)
 
 # Generate labels
 titles <- c("Middlesbrough","Liverpool","Knowsley","Kingston","Manchester","Blackpool",
@@ -93,7 +67,7 @@ p1 <- ggplot() + geom_tile(aes(x = ryb, fill = ryb, y = 1)) +
   theme(axis.line = element_blank(),
         axis.ticks = element_blank(),
         axis.text.y = element_blank(),
-        axis.text.x = element_text(colour = "white",family = "mono", size = 18, face = "bold"),
+        axis.text.x = element_text(colour = "white",family = "mono", size = 20, face = "bold"),
         axis.title = element_blank(),
         legend.position = "none",
         panel.background = element_rect(fill = "grey12", colour = "grey12"),
@@ -133,13 +107,15 @@ caption1 <- ggdraw() + draw_label("Top 10 most deprived Local Authorities determ
                                    colour = "white", size = 14, hjust = 0.5, fontfamily = "mono")
 caption2 <- ggdraw() + draw_label("Deprivation data from the Office for National Statistics (2019). Contains OS Data © Crown copyright 2019.",
                                   colour = "white", size = 14, hjust = 0.5, fontfamily = "mono")
-caption3 <- ggdraw() + draw_label("@sh_langton",
+caption3 <- ggdraw() + draw_label("Each Local Authority mapped on different scale.",
+                                  colour = "white", size = 14, hjust = 0.5, fontfamily = "mono")
+caption4 <- ggdraw() + draw_label("@sh_langton",
                                   colour = "white", size = 26, hjust = 0.5, fontfamily = "mono")
 
 
 
 # # Arrange maps
-threes_cow <-   plot_grid(NULL               , origtitle            , dorltitle            , geogtitle            ,
+threes_cow <-   plot_grid(NULL               , origtitle            , dorltitle            , geogtitle           ,
                           Middlesbrough_labs , Middlesbrough_orig_gg, Middlesbrough_dorl_gg, Middlesbrough_hex_gg,
                           Liverpool_labs     , Liverpool_orig_gg    , Liverpool_dorl_gg    , Liverpool_hex_gg    ,
                           Knowsley_labs      , Knowsley_orig_gg     , Knowsley_dorl_gg     , Knowsley_hex_gg     ,
@@ -187,15 +163,18 @@ full_plot <- plot_grid(maintitle1,
                        caption1,
                        caption2,
                        caption3,
-                       nrow = 10,
-                       rel_heights = c(0.04,0.04,0.02,0.02,1,0.03,0.06,0.01,0.01,0.07),
+                       caption4,
+                       nrow = 11,
+                       rel_heights = c(0.04,0.04,0.02,0.02,1,0.03,0.05,0.01,0.01,0.01,0.07),
                        scale = c(1,1,1,1,1,1,0.8)) +
   theme(panel.background = element_rect(fill = "grey12", colour = "grey12"))
 
 # Save as PNG
 ggsave(full_plot, filename = "visuals/triplets.jpeg",
-       height = 32, width = 16, device = "jpeg", dpi = 600)
+       height = 42, width = 24, device = "jpeg", dpi = 600)
 
+# Save workspace to avoid re-generating the hex objects
+save.image("scripts/data_handling_vis_workspace.RData")
 
 # -----------------------------------------------------------------------
 # One-off triplets   ------------------------------------------------------

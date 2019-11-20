@@ -98,6 +98,7 @@ top10.dorl.list.sf <- lapply(top10.list.sf, function(x){
 })
 
 # Birmingham, Manchester and (maybe) Liverpool do not quite work with k=1
+labs <- c("Birmingham", "Blackburn", "Blackpool", "Burnley","Hartlepool", "Kingston"  ,"Knowsley", "Liverpool", "Manchester","Middlesbrough")
 names(top10.list.sf) <- paste0(labs,"_sf")
 list2env(top10.list.sf, envir = .GlobalEnv)
 
@@ -122,7 +123,6 @@ top10.grid.empty.list.sf <- lapply(top10.list.sf, function(x){
 
 # Assign the dorling outputs to the empty grids (no loop yet)
 # Bring the empty grids into environment individually
-labs <- c("Birmingham", "Blackburn", "Blackpool", "Burnley","Hartlepool", "Kingston"  ,"Knowsley", "Liverpool", "Manchester","Middlesbrough")
 names(top10.grid.empty.list.sf) <- paste0(labs,"_grid")
 list2env(top10.grid.empty.list.sf, envir = .GlobalEnv)
 
@@ -146,8 +146,4 @@ Middlesbrough_hex <- assign_polygons(Middlesbrough_sf, Middlesbrough_grid)
 
 hex_list <- list(Birmingham_hex, Blackburn_hex, Blackpool_hex, Burnley_hex, Hartlepool_hex,
                  Kingston_hex, Knowsley_hex, Liverpool_hex, Manchester_hex, Middlesbrough_hex)
-
-
-# Save workspace to avoid re-generating the hex objects
-save.image("scripts/data_handling_workspace_v2.RData")
 
