@@ -14,7 +14,7 @@ ryb <- brewer_pal(palette = "RdYlBu")(10) # main
 
 myplot <- function(data){
   ggplot(data) +
-    geom_sf(aes(fill = IMD19rank), colour = "white", size = 0.1)  +
+    geom_sf(aes(fill = IMD19rank), colour = "white", size = 1)  +
     scale_fill_manual(values = ryb) + 
     theme_void() +
     theme(panel.grid.major = element_line(colour = "transparent"),
@@ -76,18 +76,6 @@ p1 <- ggplot() + geom_tile(aes(x = ryb, fill = ryb, y = 1)) +
         plot.background  = element_rect(fill = "grey12", colour = "grey12")) +
   scale_x_discrete(labels = c(" 1 \n \n Most deprived","2","3","4","5",
                               "6","7","8","9"," 10 \n \n Least deprived")) 
-
-# Generate labels
-titles <- c("Middlesbrough","Liverpool","Knowsley","Kingston","Manchester","Blackpool",
-            "Birmingham","Burnley","Blackburn","Hartlepool")
-
-mytitleplot <- function(title){
-  ggdraw() + draw_label(title, colour = "white", size = 20, angle = 90, fontfamily = "mono", fontface = "bold")
-}
-
-labs <- lapply(titles, mytitleplot)
-names(labs) <- paste0(titles,"_labs")
-list2env(labs, envir = .GlobalEnv)
 
 origtitle <- ggdraw() + draw_label("Original", colour = "white", size = 20, fontfamily = "mono", fontface = "bold")
 dorltitle <- ggdraw() + draw_label("Dorling" , colour = "white", size = 20, fontfamily = "mono", fontface = "bold")
