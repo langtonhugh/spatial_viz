@@ -9,13 +9,13 @@ library(scales)
 library(viridis)
 
 # ggplot function and defining colours
-viri <- viridis::inferno(10) # colour blind friendly
+viri <- viridis::viridis(10) # colour blind friendly
 ryb <- brewer_pal(palette = "RdYlBu")(10) # main
 
 myplot <- function(data){
   ggplot(data) +
-    geom_sf(aes(fill = IMD19rank), colour = "white", size = 1)  +
-    scale_fill_manual(values = ryb) + 
+    geom_sf(aes(fill = IMD19rank), colour = "white", size = 0.15)  +
+    scale_fill_manual(values = viri) + 
     theme_void() +
     theme(panel.grid.major = element_line(colour = "transparent"),
           axis.text.x = element_blank(),
@@ -35,6 +35,8 @@ hex_plot  <- lapply(hex_list, myplot)
 
 # Extract elements from lists for arranging.
 
+labs <- c("Birmingham", "Blackburn", "Blackpool", "Burnley","Hartlepool", "Kingston"  ,"Knowsley", "Liverpool", "Manchester","Middlesbrough")
+
 names(orig_plot) <- paste0(labs,"_orig_gg")
 names(dorl_plot) <- paste0(labs,"_dorl_gg")
 names(hex_plot)  <- paste0(labs,"_hex_gg")
@@ -51,9 +53,9 @@ mytitleplot <- function(title){
   ggdraw() + draw_label(title, colour = "white", size = 22, angle = 90, fontfamily = "mono",fontface = "bold")
 }
 
-labs <- lapply(titles, mytitleplot)
-names(labs) <- paste0(titles,"_labs")
-list2env(labs, envir = .GlobalEnv)
+labs2 <- lapply(titles, mytitleplot)
+names(labs2) <- paste0(titles,"_labs")
+list2env(labs2, envir = .GlobalEnv)
 
 origtitle <- ggdraw() + draw_label("Original", colour = "white", size = 20, fontfamily = "mono", fontface = "bold") 
 dorltitle <- ggdraw() + draw_label("Dorling" , colour = "white", size = 20, fontfamily = "mono", fontface = "bold") 
@@ -61,9 +63,8 @@ geogtitle <- ggdraw() + draw_label("Geogrid" , colour = "white", size = 20, font
 
 
 # Hacky way of creating a custom legend for the main plot
-ryb <- brewer_pal(palette = "RdYlBu")(10)
-p1 <- ggplot() + geom_tile(aes(x = ryb, fill = ryb, y = 1)) + 
-  scale_fill_manual(values = ryb) + 
+p1 <- ggplot() + geom_tile(aes(x = viri, fill = viri, y = 1)) + 
+  scale_fill_manual(values = viri) + 
   theme(axis.line = element_blank(),
         axis.ticks = element_blank(),
         axis.text.y = element_blank(),
@@ -158,7 +159,10 @@ full_plot <- plot_grid(maintitle1,
   theme(panel.background = element_rect(fill = "grey12", colour = "grey12"))
 
 # Save as PNG
-ggsave(full_plot, filename = "visuals/triplets.jpeg",
+# ggsave(full_plot, filename = "visuals/triplets.jpeg",
+#        height = 42, width = 24, device = "jpeg", dpi = 600)
+
+ggsave(full_plot, filename = "visuals/triplets_cb.jpeg",
        height = 42, width = 24, device = "jpeg", dpi = 600)
 
 # Save workspace to avoid re-generating the hex objects
