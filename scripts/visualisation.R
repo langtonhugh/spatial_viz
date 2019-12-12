@@ -12,7 +12,7 @@ library(viridis)
 viri <- viridis::viridis(10) # colour blind friendly
 ryb <- brewer_pal(palette = "RdYlBu")(10) # main
 
-myplot <- function(data){
+myplot1 <- function(data){
   ggplot(data) +
     geom_sf(aes(fill = IMD19rank), colour = "white", size = 0.15)  +
     scale_fill_manual(values = viri) + 
@@ -24,13 +24,54 @@ myplot <- function(data){
           panel.background = element_rect(fill = "grey12", colour = "grey12"))
 }
 
-# Loop through each element (Local Authority) with viz function
-orig_plot <- lapply(top10.list.sf, myplot)
-dorl_plot <- lapply(top10.dorl.list.sf, myplot)
-hex_plot  <- lapply(hex_list, myplot)
+myplot2 <- function(data){
+  ggplot(data) +
+    geom_sf(aes(fill = IMD19rank), colour = "transparent")  +
+    scale_fill_manual(values = ryb) + 
+    theme_void() +
+    theme(panel.grid.major = element_line(colour = "transparent"),
+          axis.text.x = element_blank(),
+          axis.text.y = element_blank(),
+          legend.position = "none")
+}
+
 
 # -----------------------------------------------------------------------
-# Poster style   --------------------------------------------------------
+# Big Poster style   ----------------------------------------------------
+# -----------------------------------------------------------------------
+
+# make the plots 
+list.hex.gg <- lapply(list.hex.sf, myplot2)
+
+## name elements according to their LA names
+
+# create vector containing LAnames ordered by IMD rank, without the two outliers (N = 315)
+LA.imd <- LA.imd %>% 
+  arrange(n)
+vec_temp <- as.data.frame(unique(LA2.imd$LA11_name)) # the ordered list)
+names(vec_temp) <- "LAname"
+vec_temp_sub <- vec_temp %>%
+  filter(LAname %in% n.vec) %>%
+  pull(LAname)
+
+## order the list.hex.sf list according to this vector
+# name the list alphabetically
+vec_temp_sub_sort <- sort(vec_temp_sub)
+names(list.hex.gg) <- vec_temp_sub_sort
+
+# order
+vec_temp_sub <- as.character(vec_temp_sub)
+list.hex.gg <- list.hex.gg[vec_temp_sub]
+
+plot_grid(plotlist = list.hex.gg, ncol = 16, scale = 0.9)
+
+# Loop through each element (Local Authority) with viz function
+orig_plot <- lapply(top10.list.sf, myplot1)
+dorl_plot <- lapply(top10.dorl.list.sf, myplot1)
+hex_plot  <- lapply(hex_list, myplot1)
+
+# -----------------------------------------------------------------------
+# Small Poster style   --------------------------------------------------
 # -----------------------------------------------------------------------
 
 # Extract elements from lists for arranging.

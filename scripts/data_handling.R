@@ -116,12 +116,40 @@ top10.dorl.list.sf[[9]] <- Manchester_dorl
 # Geogrids  -------------------------------------------------------------------------
 # -----------------------------------------------------------------------------------
 
+# *** For all LA. Skip to next section for just the top 10 ***
+
+# Identify those extremes (< 20, > 1000)
+n.vec <- lsoa.imd.sub.sf %>% 
+  as_tibble() %>% 
+  group_by(LA11_name) %>% 
+  tally() %>% 
+  filter(n > 20 & n < 1000) %>% 
+  pull(LA11_name)
+
+no.ex.lsoa.imd.sub.sf <- lsoa.imd.sub.sf %>% 
+  filter(LA11_name %in% n.vec)
+
+# Create list of all LA sf objects.
+list.sf <- group_split(no.ex.lsoa.imd.sub.sf, LA11_name)
+
+# Create geogrids for all of these non-extreme LAs
+grid.empty.list.sf <- lapply(list.sf, function(x){
+  calculate_grid(x, grid_type = "hexagonal", seed = 1)
+})
+
+# Assign to the empty grids (TAKES TIME!!!)
+list.hex.sf <- map2(list.sf, grid.empty.list.sf, assign_polygons)
+
+# Save workspace
+save.image("scripts/data_handling_vis_workspace.RData")
+
+# *** For top 10 only *** 
 # Calcuating empty grid for original LSOA boundaries
 top10.grid.empty.list.sf <- lapply(top10.list.sf, function(x){
   calculate_grid(x, grid_type = "hexagonal", seed = 1)
 })
 
-# Assign the dorling outputs to the empty grids (no loop yet)
+# Assign to the empty grids (no loop yet)
 # Bring the empty grids into environment individually
 names(top10.grid.empty.list.sf) <- paste0(labs,"_grid")
 list2env(top10.grid.empty.list.sf, envir = .GlobalEnv)
