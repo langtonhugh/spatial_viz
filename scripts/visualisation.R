@@ -10,13 +10,14 @@ library(viridis)
 
 # ggplot function and defining colours
 viri <- viridis::viridis(10) # colour blind friendly
+magm <- viridis::magma(10) # colour blind friendly
+plas <- viridis::plasma(10) # colour blind friendly
 ryb <- brewer_pal(palette = "RdYlBu")(10) # main
 
 myplot1 <- function(data){
-  ggplot(data) +
-    geom_sf(aes(fill = IMD19rank), colour = "white", size = 0.15)  +
+  ggplot(data) + theme_void() +
+    geom_sf(aes(fill = IMD19rank), colour = "white", size = 0.05)  +
     scale_fill_manual(values = viri) + 
-    theme_void() +
     theme(panel.grid.major = element_line(colour = "transparent"),
           axis.text.x = element_blank(),
           axis.text.y = element_blank(),
@@ -24,31 +25,19 @@ myplot1 <- function(data){
           panel.background = element_rect(fill = "grey12", colour = "grey12"))
 }
 
-myplot2 <- function(data){
-  ggplot(data) +
-    geom_sf(aes(fill = IMD19rank), colour = "transparent")  +
-    scale_fill_manual(values = ryb) + 
-    theme_void() +
-    theme(panel.grid.major = element_line(colour = "transparent"),
-          axis.text.x = element_blank(),
-          axis.text.y = element_blank(),
-          legend.position = "none")
-}
-
-
 # -----------------------------------------------------------------------
 # Big Poster style   ----------------------------------------------------
 # -----------------------------------------------------------------------
 
 # make the plots 
-list.hex.gg <- lapply(list.hex.sf, myplot2)
+list.hex.gg <- lapply(list.hex.sf, myplot1)
 
 ## name elements according to their LA names
 
 # create vector containing LAnames ordered by IMD rank, without the two outliers (N = 315)
 LA.imd <- LA.imd %>% 
   arrange(n)
-vec_temp <- as.data.frame(unique(LA2.imd$LA11_name)) # the ordered list)
+vec_temp <- as.data.frame(unique(LA.imd$LA11_name)) # the ordered list)
 names(vec_temp) <- "LAname"
 vec_temp_sub <- vec_temp %>%
   filter(LAname %in% n.vec) %>%
@@ -63,16 +52,20 @@ names(list.hex.gg) <- vec_temp_sub_sort
 vec_temp_sub <- as.character(vec_temp_sub)
 list.hex.gg <- list.hex.gg[vec_temp_sub]
 
-plot_grid(plotlist = list.hex.gg, ncol = 16, scale = 0.9)
+p1 <- plot_grid(plotlist = list.hex.gg, ncol = 16, scale = 0.9) +
+  theme(panel.background = element_rect(fill = "grey12", colour = "grey12"))
+
+ggsave(p1, filename = "visuals/poster_wip_viri.jpeg",
+       height = 42, width = 24, device = "jpeg", dpi = 600)
+
+# -----------------------------------------------------------------------
+# Small Poster style   --------------------------------------------------
+# -----------------------------------------------------------------------
 
 # Loop through each element (Local Authority) with viz function
 orig_plot <- lapply(top10.list.sf, myplot1)
 dorl_plot <- lapply(top10.dorl.list.sf, myplot1)
 hex_plot  <- lapply(hex_list, myplot1)
-
-# -----------------------------------------------------------------------
-# Small Poster style   --------------------------------------------------
-# -----------------------------------------------------------------------
 
 # Extract elements from lists for arranging.
 
@@ -207,7 +200,7 @@ ggsave(full_plot, filename = "visuals/triplets_cb.jpeg",
        height = 42, width = 24, device = "jpeg", dpi = 600)
 
 # Save workspace to avoid re-generating the hex objects
-save.image("scripts/data_handling_vis_workspace.RData")
+# save.image("scripts/data_handling_vis_workspace.RData")
 
 # -----------------------------------------------------------------------
 # One-off triplets   ------------------------------------------------------
