@@ -10,13 +10,14 @@ library(viridis)
 
 # ggplot function and defining colours
 viri <- viridis::viridis(10) # colour blind friendly
+magm <- viridis::magma(10) # colour blind friendly
+plas <- viridis::plasma(10) # colour blind friendly
 ryb <- brewer_pal(palette = "RdYlBu")(10) # main
 
 myplot1 <- function(data){
   ggplot(data) +
     geom_sf(aes(fill = IMD19rank), colour = "white", size = 0.0015)  +
     scale_fill_manual(values = viri) + 
-    theme_void() +
     theme(panel.grid.major = element_line(colour = "transparent"),
           axis.text.x = element_blank(),
           axis.text.y = element_blank(),
@@ -29,7 +30,7 @@ myplot1 <- function(data){
 # -----------------------------------------------------------------------
 
 # make the plots 
-list.hex1.gg <- lapply(list.hex.sf, myplot1)
+list.hex.gg <- lapply(list.hex.sf, myplot1)
 
 ## name elements according to their LA names
 
@@ -50,11 +51,19 @@ names(list.hex1.gg) <- vec_temp_sub_sort
 # order
 vec_temp_sub <- as.character(vec_temp_sub)
 
+
 list.hex1.gg <- list.hex1.gg[vec_temp_sub]
 
 # plot blank visual for demo only
 plot_grid(plotlist = list.hex1.gg, ncol = 16, scale = 0.9)
 
+
+
+p1 <- plot_grid(plotlist = list.hex.gg, ncol = 16, scale = 0.9) +
+  theme(panel.background = element_rect(fill = "grey12", colour = "grey12"))
+
+ggsave(p1, filename = "visuals/poster_wip_viri.jpeg",
+       height = 42, width = 24, device = "jpeg", dpi = 600)
 
 
 # -----------------------------------------------------------------------
@@ -199,7 +208,7 @@ ggsave(full_plot, filename = "visuals/triplets_cb.jpeg",
        height = 42, width = 24, device = "jpeg", dpi = 600)
 
 # Save workspace to avoid re-generating the hex objects
-save.image("scripts/data_handling_vis_workspace.RData")
+# save.image("scripts/data_handling_vis_workspace.RData")
 
 # -----------------------------------------------------------------------
 # One-off triplets   ------------------------------------------------------
