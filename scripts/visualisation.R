@@ -15,14 +15,17 @@ plas <- viridis::plasma(10) # colour blind friendly
 ryb <- brewer_pal(palette = "RdYlBu")(10) # main
 
 myplot1 <- function(data){
-  ggplot(data) +
+  ggplot(data) + theme_void() +
     geom_sf(aes(fill = IMD19rank), colour = "white", size = 0.0015)  +
-    scale_fill_manual(values = viri) + 
-    theme(panel.grid.major = element_line(colour = "transparent"),
-          axis.text.x = element_blank(),
-          axis.text.y = element_blank(),
+    scale_fill_manual(values = viri) +
+    theme(axis.text = element_blank(),
+          axis.ticks = element_blank(),
           legend.position = "none",
-          panel.background = element_rect(fill = "grey12", colour = "grey12"))
+          panel.grid.minor = element_line(colour = "transparent"),
+          panel.grid.major = element_line(colour = "transparent"),
+          panel.background = element_rect(fill = "grey12", colour = "grey12"),
+          plot.background = element_rect(fill = "grey12"),
+          panel.border = element_blank())
 }
 
 # -----------------------------------------------------------------------
@@ -30,6 +33,7 @@ myplot1 <- function(data){
 # -----------------------------------------------------------------------
 
 # make the plots 
+par(bg="gray12")
 list.hex.gg <- lapply(list.hex.sf, myplot1)
 
 ## name elements according to their LA names
@@ -46,24 +50,30 @@ vec_temp_sub <- vec_temp %>%
 ## order the list.hex.sf list according to this vector
 # name the list alphabetically
 vec_temp_sub_sort <- sort(vec_temp_sub)
-names(list.hex1.gg) <- vec_temp_sub_sort
+names(list.hex.gg) <- vec_temp_sub_sort
 
 # order
 vec_temp_sub <- as.character(vec_temp_sub)
 
 
-list.hex1.gg <- list.hex1.gg[vec_temp_sub]
+list.hex.gg <- list.hex.gg[vec_temp_sub]
 
 # plot blank visual for demo only
-plot_grid(plotlist = list.hex1.gg, ncol = 16, scale = 0.9)
+#plot_grid(plotlist = list.hex1.gg, ncol = 16, scale = 0.9)
 
-
-
-p1 <- plot_grid(plotlist = list.hex.gg, ncol = 16, scale = 0.9) +
+p1 <- plot_grid(plotlist = list.hex.gg, nrow = 16, scale = 0.9) +
   theme(panel.background = element_rect(fill = "grey12", colour = "grey12"))
 
-ggsave(p1, filename = "visuals/poster_wip_viri.jpeg",
+p2 <- plot_grid(plotlist = list.hex.gg, ncol = 16, scale = 0.9) +
+  theme(panel.background = element_rect(fill = "grey12", colour = "grey12"))
+
+
+ggsave(p1, filename = "visuals/poster_wip_viri_low_qual.jpeg",
+       width = 42, height = 24, device = "png", dpi = 100)
+
+ggsave(p2, filename = "visuals/poster_wip_viri.jpeg",
        height = 42, width = 24, device = "jpeg", dpi = 600)
+
 
 
 # -----------------------------------------------------------------------
@@ -113,7 +123,6 @@ p1 <- ggplot() + geom_tile(aes(x = viri, fill = viri, y = 1)) +
         axis.text.x = element_text(colour = "white",family = "mono", size = 20, face = "bold"),
         axis.title = element_blank(),
         legend.position = "none",
-        panel.background = element_rect(fill = "grey12", colour = "grey12"),
         panel.grid.major = element_line(colour = "transparent"),
         panel.grid.minor = element_line(colour = "transparent"),
         plot.background  = element_rect(fill = "grey12", colour = "grey12")) +
