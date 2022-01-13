@@ -1,5 +1,7 @@
 # 2 - data handling
 
+# Edits made by SL 13 January 2022 for MoD presentation.
+
 library(cowplot)
 library(tidyverse)
 library(sf)
@@ -46,6 +48,25 @@ top10 <- LA.imd %>%
   select(LA11_name) %>% 
   pull()
 
+# Top 10 most deprived but as df for new stuff.
+top10_df <- LA.imd %>% 
+  slice(1:10) %>% 
+  select(LA11_name) %>% 
+  mutate(rank = 1:10,
+         half = "top10")
+
+# 'Bottom' 10 most deprived. NOTE: this is "some" of the top 10 least, because they literally have zero.
+# So, we just select them and then take a random sample of ten.
+
+set.seed(1612) # for reproduction.
+
+bot10_df <- LA.imd %>% 
+  filter(prop.imd == 0) %>% 
+  sample_n(10) %>% 
+  select(LA11_name) %>% 
+  mutate(rank = 1:10,
+         half = "bottom10") 
+
 # Load shapefiles of LSOA
 lsoa.sf <- st_read("data/Lower_Layer_Super_Output_Areas_December_2011_Super_Generalised_Clipped__Boundaries_in_England_and_Wales.shp")
 
@@ -68,6 +89,8 @@ imd.sub.df <- left_join(imd.sub.df, pop.df, by = "LSOA11_code")
 # Merge subset df with polygons
 lsoa.imd.sub.sf <- left_join(lsoa.sf, imd.sub.df, by = "LSOA11_code")
 
+names(lsoa.imd.sub.sf)
+
 # Note:
 # Warning over character coercion not a problem.
 # There are some losses, with less LSOA polygons than there are
@@ -79,6 +102,81 @@ lsoa.imd.sub.sf <- lsoa.imd.sub.sf %>%
          st_lengths, IMD19score, IMD19rank, pop) %>% 
   arrange(LA11_name) %>% 
   mutate(IMD19rank = as.factor(IMD19rank))
+
+# Extract top and bottom 10.
+topbot10.sf <- lsoa.imd.sub.sf %>%
+  filter(LA11_name %in% c(top10_df$LA11_name, bot10_df$LA11_name) ) %>% 
+  mutate(LA11_name = as.factor(LA11_name))
+
+# Join back the rank stuff with it.
+topfull_df <- bind_rows(top10_df, bot10_df) # rbind the tens.
+
+topbot10_new_sf <- left_join(topbot10.sf, topfull_df) 
+
+# Check.
+names(topbot10_new_sf)
+
+# Check that we have 20.
+unique(topbot10_new_sf$LA11_name)
+length(unique(topbot10_new_sf$LA11_name))
+
+# Plot.
+topbot10_new_list_sf <- group_split(topbot10_new_sf, LA11_name)
+
+topbot10_new_list_gg <- lapply(topbot10_new_list_sf, function(x){
+  ggplot(data = x) +
+    geom_sf(mapping = aes(fill = IMD19rank)) +
+    scale_fill_viridis_d() +
+    theme_void() +
+    labs(title = paste(unique(x$LA11_name)))
+})
+
+map_check_gg <- cowplot::plot_grid(plotlist = topbot10_new_list_gg, nrow = 5)
+
+# Save.
+ggsave(map_check_gg, filename = "visuals/topbot10.png", height = 32, width = 32, unit = "cm")
+
+# Just take the top 10 again.
+top10_list_sf <- topbot10_new_sf %>% 
+  filter(half == "top10") %>% 
+  group_split(LA11_name)
+
+# Plot function from visualisation.r,
+
+viri <- viridis::viridis(10) # colour blind friendly
+
+myplot1 <- function(data){
+  ggplot(data) + theme_void() +
+    geom_sf(aes(fill = IMD19rank), colour = "white", size = 0.0015)  +
+    scale_fill_manual(values = viri) +
+    theme(axis.text = element_blank(),
+          axis.ticks = element_blank(),
+          legend.position = "none", # turn on to check the legend is correct (some LA don't have any wealthy deciles)
+          panel.grid.minor = element_line(colour = "transparent"),
+          panel.grid.major = element_line(colour = "transparent"),
+          panel.background = element_rect(fill = "grey12", colour = "grey12"),
+          plot.background = element_rect(fill = "grey12"),
+          panel.border = element_blank())
+}
+
+# Plot top 10.
+top10_list_gg <- lapply(top10_list_sf, myplot1)
+
+top10_gg <- cowplot::plot_grid(plotlist = top10_list_gg, nrow = 5)
+
+# Save.
+ggsave(top10_gg, filename = "visuals/top10.png", height = 32, width = 32, unit = "cm")
+
+# Give names for save.
+temp <- topbot10_new_sf %>% 
+  filter(half == "top10") 
+
+names(top10_list_gg) <-  unique(temp$LA11_name)
+
+# Save invididually for MoD survey.
+for (i in top10_list_gg) {
+  ggsave(filename = paste("visuals/", "hello", ".png", sep = ""))
+}
 
 # Extract Top 10
 top10.sf <- lsoa.imd.sub.sf %>%
