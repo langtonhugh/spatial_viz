@@ -144,7 +144,6 @@ top10_list_sf <- topbot10_new_sf %>%
 # Plot function from visualisation.r,
 
 viri <- viridis::viridis(10) # colour blind friendly
-
 myplot1 <- function(data){
   ggplot(data) + theme_void() +
     geom_sf(aes(fill = IMD19rank), colour = "white", size = 0.0015)  +

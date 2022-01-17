@@ -1,4 +1,5 @@
 # 3 - Visualisation
+# Edits made by SL 13 January 2022 for MoD presentation.
 
 load("scripts/data_handling_vis_workspace.RData")
 
@@ -9,23 +10,64 @@ library(scales)
 library(viridis)
 
 # ggplot function and defining colours
-viri <- viridis::viridis(10) # colour blind friendly
+# viri <- viridis::viridis(10) # colour blind friendly
+viri <- viridis::viridis(5) # colour blind friendly
 magm <- viridis::magma(10) # colour blind friendly
 plas <- viridis::plasma(10) # colour blind friendly
 ryb <- brewer_pal(palette = "RdYlBu")(10) # main
 
+# Recode test.
+recode_test <- list.hex.sf[[300]] %>%
+  mutate(IMD19rank_new5 = recode(IMD19rank,
+                                 "1"  = 1,
+                                 "2"  = 1,
+                                 "3"  = 2,
+                                 "4"  = 2,
+                                 "5"  = 3,
+                                 "6"  = 3,
+                                 "7"  = 4,
+                                 "8"  = 4,
+                                 "9"  = 5,
+                                 "10" = 5))
+
+# Check.
+ggplot(data = recode_test) +
+  geom_point(mapping = aes(x = IMD19rank, y = IMD19rank_new5))
+
+# Recode and plot.
 myplot1 <- function(data){
-  ggplot(data) + theme_void() +
-    geom_sf(aes(fill = IMD19rank), colour = "white", size = 0.0015)  +
-    scale_fill_manual(values = viri) +
+  data %>%
+    mutate(IMD19rank_new5 = recode(IMD19rank,
+                                   "1"  = 1,
+                                   "2"  = 1,
+                                   "3"  = 2,
+                                   "4"  = 2,
+                                   "5"  = 3,
+                                   "6"  = 3,
+                                   "7"  = 4,
+                                   "8"  = 4,
+                                   "9"  = 5,
+                                   "10" = 5),
+           IMD19rank_new5 = as.character(IMD19rank_new5)) %>% 
+  ggplot(data = .) +
+    theme_void() +
+    geom_sf(aes(fill = IMD19rank_new5), colour = "white", size = 0.0015)  +
+    scale_fill_manual(values = viri, labels = 1:5, drop = F) + 
+    guides(fill = guide_legend(nrow = 1)) +
+    labs(fill = NULL) +
     theme(axis.text = element_blank(),
           axis.ticks = element_blank(),
-          legend.position = "none",
+          legend.position = "bottom",
+          legend.text = element_text(colour = "white"),
+          legend.box.background = element_rect(colour = "transparent"),
+          legend.background = element_rect(fill = "transparent", 
+                                           colour = "transparent"),
           panel.grid.minor = element_line(colour = "transparent"),
           panel.grid.major = element_line(colour = "transparent"),
           panel.background = element_rect(fill = "grey12", colour = "grey12"),
           plot.background = element_rect(fill = "grey12"),
-          panel.border = element_blank())
+          panel.border = element_blank(),
+          plot.margin = unit(c(t = 0, r = 0, b = 1, l = 0), "cm"))
 }
 
 # -----------------------------------------------------------------------
@@ -40,7 +82,9 @@ list.hex.gg <- lapply(list.hex.sf, myplot1)
 
 # create vector containing LAnames ordered by IMD rank, without the two outliers (N = 315)
 LA.imd <- LA.imd %>% 
-  arrange(n)
+  # arrange(n)
+  arrange(prop.imd) # edit 14 jan 2022
+
 vec_temp <- as.data.frame(unique(LA.imd$LA11_name)) # the ordered list)
 names(vec_temp) <- "LAname"
 vec_temp_sub <- vec_temp %>%
@@ -58,23 +102,29 @@ vec_temp_sub <- as.character(vec_temp_sub)
 
 list.hex.gg <- list.hex.gg[vec_temp_sub]
 
+length(list.hex.gg)
+
+top10.hex.list.sf <- list.hex.gg[306:315]
+
+length(top10.hex.list.sf)
+
+names(top10.hex.list.sf) <- names(list.hex.gg[306:315])
+
 # plot blank visual for demo only
 #plot_grid(plotlist = list.hex1.gg, ncol = 16, scale = 0.9)
+# Update comment: why two identical? Seems pointless.
 
-p1 <- plot_grid(plotlist = list.hex.gg, nrow = 16, scale = 0.9) +
-  theme(panel.background = element_rect(fill = "grey12", colour = "grey12"))
+# p1 <- plot_grid(plotlist = list.hex.gg, nrow = 16, scale = 0.9) +
+#   theme(panel.background = element_rect(fill = "grey12", colour = "grey12"))
+# 
+# p2 <- plot_grid(plotlist = list.hex.gg, ncol = 16, scale = 0.9) +
+#   theme(panel.background = element_rect(fill = "grey12", colour = "grey12"))
 
-p2 <- plot_grid(plotlist = list.hex.gg, ncol = 16, scale = 0.9) +
-  theme(panel.background = element_rect(fill = "grey12", colour = "grey12"))
+# ggsave(p1, filename = "visuals/poster_wip_viri_low_qual.jpeg",
+#        width = 42, height = 24, device = "png", dpi = 100)
 
-
-ggsave(p1, filename = "visuals/poster_wip_viri_low_qual.jpeg",
-       width = 42, height = 24, device = "png", dpi = 100)
-
-ggsave(p2, filename = "visuals/poster_wip_viri.jpeg",
-       height = 42, width = 24, device = "jpeg", dpi = 600)
-
-
+# ggsave(p2, filename = "visuals/poster_wip_viri.jpeg",
+#        height = 42, width = 24, device = "jpeg", dpi = 600)
 
 # -----------------------------------------------------------------------
 # Small Poster style   --------------------------------------------------
@@ -83,15 +133,57 @@ ggsave(p2, filename = "visuals/poster_wip_viri.jpeg",
 # Loop through each element (Local Authority) with viz function
 orig_plot <- lapply(top10.list.sf, myplot1)
 dorl_plot <- lapply(top10.dorl.list.sf, myplot1)
-hex_plot  <- lapply(hex_list, myplot1)
+hex_plot  <- top10.hex.list.sf # Exists so just rename object.
 
-# Extract elements from lists for arranging.
+# hex_plot  <- lapply(top10.hex.list.sf, myplot1) # edit 14 jan 2022
+# hex_plot  <- lapply(hex_list, myplot1)
 
+# Check.
+length(orig_plot)
+length(dorl_plot)
+length(hex_plot)
+
+names(orig_plot)
+names(dorl_plot)
+names(hex_plot)
+
+# Original is incorrect ordering but it is labelled correctly.
+names(orig_plot) <- str_remove_all(names(orig_plot), "_sf")
+names(dorl_plot) <- names(orig_plot)
+
+# Now save.
+lapply(names(orig_plot), function(i)
+  ggsave(plot = orig_plot[[i]], filename = paste0("visuals/mod/", i, "_original", ".png"),
+         height = 7, width = 7, unit = "in")
+)
+
+lapply(names(dorl_plot), function(i)
+  ggsave(plot = dorl_plot[[i]], filename = paste0("visuals/mod/", i, "_dorling", ".png"),
+         height = 7, width = 7, unit = "in")
+)
+
+lapply(names(hex_plot), function(i)
+  ggsave(plot = hex_plot[[i]], filename = paste0("visuals/mod/", i, "_hex", ".png"),
+         height = 7, width = 7, unit = "in")
+)
+
+# Save them to check everything matches up.
+original_gg <- plot_grid(plotlist = orig_plot, nrow = 10)
+dorling_gg  <- plot_grid(plotlist = dorl_plot, nrow = 10)
+hex_gg      <- plot_grid(plotlist = hex_plot , nrow = 10)
+fu
 labs <- c("Birmingham", "Blackburn", "Blackpool", "Burnley","Hartlepool", "Kingston"  ,"Knowsley", "Liverpool", "Manchester","Middlesbrough")
 
 names(orig_plot) <- paste0(labs,"_orig_gg")
 names(dorl_plot) <- paste0(labs,"_dorl_gg")
 names(hex_plot)  <- paste0(labs,"_hex_gg")
+
+ll_cols_gg <- plot_grid(original_gg, dorling_gg, hex_gg, ncol = 3)
+
+ggsave(full_cols_gg, height = 30, width = 12, filename = "visuals/col_test.png", unit = "cm")
+
+# Extract elements from lists for arranging.
+
 
 list2env(orig_plot, envir = .GlobalEnv)
 list2env(dorl_plot, envir = .GlobalEnv)
