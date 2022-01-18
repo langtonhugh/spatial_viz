@@ -135,6 +135,33 @@ orig_plot <- lapply(top10.list.sf, myplot1)
 dorl_plot <- lapply(top10.dorl.list.sf, myplot1)
 hex_plot  <- top10.hex.list.sf # Exists so just rename object.
 
+# Pull out the real resident population living in the most deprived fifth in the MoD case studies.
+residents_list <- top10.list.sf[c("Birmingham_sf", "Burnley_sf", "Hartlepool_sf")]
+
+# Function.
+pop_fun <- function(x) {
+  x %>%
+    mutate(IMD19rank_new5 = recode(IMD19rank, "1"  = 1, "2"  = 1, "3"  = 2, "4"  = 2, "5"  = 3,
+                                              "6"  = 3, "7"  = 4, "8"  = 4, "9"  = 5, "10" = 5), # repeat necessary
+         IMD19rank_new5 = as.character(IMD19rank_new5)) %>% 
+    group_by(LA11_name, IMD19rank_new5) %>% 
+    summarise(pop_imd = sum(pop)) %>% 
+    ungroup() %>% 
+    mutate(total_pop = sum(pop_imd),
+           prop_pop   = 100*pop_imd/total_pop) %>% 
+    as_tibble() %>% 
+    select(-geometry)
+}
+
+# Run through the three study sites.
+residents_imd_list <- lapply(residents_list, pop_fun)
+
+# Bind rows.
+residents_imd_df <- bind_rows(residents_imd_list)
+
+# Save for usage!
+write_csv(x = residents_imd_df, file = "results/residents_imd_df.csv")
+
 # hex_plot  <- lapply(top10.hex.list.sf, myplot1) # edit 14 jan 2022
 # hex_plot  <- lapply(hex_list, myplot1)
 

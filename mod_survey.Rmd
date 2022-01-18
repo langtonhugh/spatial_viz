@@ -1,0 +1,57 @@
+---
+title: "MoD survey"
+author: "Sam Langton & Reka Solymosi"
+date: "19/01/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F, message = F, warning = F)
+```
+
+
+## Motivation
+
+<h1 style="font-size:1vw">
+
+<center>
+
+Do people make **worse** estimates about the underlying data when observing the **original boundaries** of a map, in comparison to **alternative methods** (e.g., dorling cartograms, hex grids)?
+
+</center> 
+
+</h1>
+
+## Data
+
+- Multiple Index of Deprivation (2019)
+- Lower Super Output Areas nested within Local Authorities
+- Three of the top 10 most deprived Local Authorities
+  - Birmingham
+  - Hartelpool
+  - Burnley
+- Recoded 1-10 scale to 1-5
+- Three map types:
+  - Orignal
+  - Hex grids (`geogrid`)
+  - Dorling cartogram (`cartogram`)
+
+<Br>
+
+```{r, echo=FALSE, fig.align = "center", out.width="900px"}
+knitr::include_graphics("img/motivation_maps.png")
+```
+
+
+## Survey
+
+```{r, echo=FALSE, fig.align = "center", out.width="700px"}
+knitr::include_graphics("img/survey_screenshot.png")
+```
+
+## Results
+
+```{r}
+# results_df <- read_csv("data/")
+```
+
