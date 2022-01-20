@@ -3,34 +3,44 @@ library(readxl)
 library(readr)
 library(dplyr)
 library(tidyr)
+library(janitor)
 library(forcats)
 library(stringr)
 library(ggplot2)
 
 # Load  survey data.
-survey_df <- read_xlsx("results/20220118-Uncertainty and Misrepresentation in spatial data (1-53).xlsx")
+survey_df <- read_xlsx("results/Uncertainty_and_Misrepresentation_in_spatial_data_(1-70).xlsx")
 
 # Initial clean.
 survey_clean_df <- survey_df %>% 
-  rename(hartlepool_original_1 = `1`,
+  rename(hartlepool_original_1 = `Column`,
          birmingham_dorling_2  = `2`,
          burnley_hex_3         = `3`,
          hartlepool_dorling_4  = `4`,
          burnley_original_5    = `5`,
-         birmingham_hex_6      = `6`,
-         hartlepool_hex_7      = `7`,
-         burnley_dorling_8     = `8`,
-         birmingham_original_9 = `9`) %>% 
-  filter(ID != 6,      # likely a test
+         birmingham_hex_6      = `Question`,
+         hartlepool_hex_7      = `6`,
+         burnley_dorling_8     = `7`,
+         birmingham_original_9 = `8`) %>% 
+  clean_names() %>% 
+  rename(ID = id) %>%  # sorry, this stops me from having to edit things later.
+  filter(ID != 5,      # sam test
+         ID != 6,      # nat test
          ID != 13,     # useful but gave text answers
          ID != 19) %>% # useful but gave text answers
-  mutate(across(2:10, as.numeric),
+  select(-name, -email, -start_time, -completion_time) %>% 
+  mutate(across(where(is.character), str_remove_all, pattern = fixed("%")),
+         across(2:10, as.numeric),
          across(2:10, round, 0)) %>% 
+  drop_na(birmingham_original_9) %>% # sum(is.na(survey_clean_df)) confirms that this dumps ppl who missed questions.
   pivot_longer(cols = -ID, names_to = "la_map_question", values_to = "estimate") %>% 
   mutate(la = if_else(str_detect(la_map_question, "hartlepool"), "hartlepool", la_map_question),
          la = if_else(str_detect(la_map_question, "birmingham"), "birmingham", la),
          la = if_else(str_detect(la_map_question, "burnley")   , "burnley"   , la)) #%>% 
-  # filter(estimate != 0) # assume misunderstood or test. Important to discuss.
+# filter(estimate != 0) # assume misunderstood or test. Important to discuss.
+
+# How many complete resonses?
+length(unique(survey_clean_df$ID)) # 64
 
 # Load in the correct answers.
 residents_df <- read_csv("results/residents_imd_df.csv")
@@ -42,7 +52,7 @@ residents_clean_df <- residents_df %>%
   rename(local_authority = LA11_name,
          real_estimate = prop_pop) 
 
-residents_clean_df
+# residents_clean_df
 
 birm_pop <- residents_clean_df$real_estimate[1]
 burn_pop <- residents_clean_df$real_estimate[2]
@@ -59,8 +69,8 @@ pops_df <- tibble(la_map_question = unique(survey_clean_df$la_map_question)) %>%
          la = if_else(str_detect(la_map_question, "burnley")   , "burnley"   , la)) %>% 
   select(ID, la_map_question, real_estimate, la)
 
-# Show that we don't accidentially include the real. No 999.
-min(survey_clean_df$ID)
+# Check.
+# max(survey_clean_df$ID) # No real one in there.
 
 # Calculate mean estimate of the survey respondents.
 pops_survey_df <- survey_clean_df %>% 
@@ -71,18 +81,6 @@ pops_survey_df <- survey_clean_df %>%
   left_join(pops_df) %>% 
   select(-ID) %>% 
   mutate(diff_estimate   = estimate-real_estimate)
-
-# Test Birmingham. I run this because in the visual below, the mean error (difference
-# between estimate and reality is actually very small, even though in the distrubution,
-# people guessed off). 
-
-birm_test_df <- survey_clean_df %>%
-  filter(la_map_question == "birmingham_hex_6") 
-
-ggplot(data = birm_test_df) +
-  geom_density(mapping = aes(x = estimate)) +
-  geom_vline(xintercept = mean(birm_test_df$estimate)) # it's okay. Mean is just dragged.
-
 
 # Bind rows and reorder factor for the plot.
 survey_clean_pops_df <- survey_clean_df %>% 
@@ -100,12 +98,7 @@ survey_clean_pops_df <- survey_clean_df %>%
                                        "hartlepool_dorling_4"))
 
 # How many are we going to plot? Take off one because it's the 'real' ID of 999!
-length(unique(survey_clean_pops_df$ID)) # 46-1=45
-
-# Do we have the same number of respondents for each question? Yes. Noting that there's one extra for 999.
-survey_clean_pops_df %>% 
-  group_by(la_map_question) %>% 
-  tally()
+# length(unique(survey_clean_pops_df$ID)) # 65-1=64
 
 # Plot. Note we do remove the real estimate first.
 ggplot() +
@@ -116,6 +109,7 @@ ggplot() +
   facet_wrap(~la_map_question, nrow = 3, scales = "fixed") +
   scale_fill_viridis_d() +
   scale_colour_viridis_d() +
+  labs(x = "Distribution of respondent estimates. Dotted line represents reality", y = NULL) +
   theme_bw() +
   theme(legend.position = "none")
 
@@ -136,15 +130,10 @@ ind_pops_diff_df <- survey_clean_pops_df %>%
                                        "hartlepool_dorling_4")) %>% 
   filter(ID.x != 999)
 
-max(ind_pops_diff_df$ID.x) # no 999
-length(unique(ind_pops_diff_df$ID.x)) # 45.
+# max(ind_pops_diff_df$ID.x) # no 999
+# length(unique(ind_pops_diff_df$ID.x)) # 64
 
-# Check responses again.
-ind_pops_diff_df %>% 
-  group_by(la_map_question) %>% 
-  tally()
-
-# Plot estimated points points.
+# Plot estimated points.
 ggplot() +
   geom_vline(xintercept = 0, linetype = "dotted") +
   geom_jitter(data = ind_pops_diff_df, mapping = aes(x = ind_diff_estimate,
@@ -161,7 +150,7 @@ ggplot() +
                size = 1) +
   scale_x_continuous(limits = c(-60, 60)) +
   scale_fill_viridis_d() +
-  labs(x = "Difference between estimate and reality",
+  labs(x = "Difference between respondent estimates and reality",
        y = NULL) +
   theme_bw() +
   theme(legend.position = "none") +
