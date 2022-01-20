@@ -59,9 +59,9 @@ myplot1 <- function(data){
           axis.ticks = element_blank(),
           legend.position = "bottom",
           legend.text = element_text(colour = "white"),
-          legend.box.background = element_rect(colour = "transparent"),
-          legend.background = element_rect(fill = "transparent", 
-                                           colour = "transparent"),
+          legend.box.background = element_rect(colour = "grey12"),
+          legend.background = element_rect(fill = "grey12", 
+                                           colour = "grey12"),
           panel.grid.minor = element_line(colour = "transparent"),
           panel.grid.major = element_line(colour = "transparent"),
           panel.background = element_rect(fill = "grey12", colour = "grey12"),
@@ -178,7 +178,16 @@ names(hex_plot)
 names(orig_plot) <- str_remove_all(names(orig_plot), "_sf")
 names(dorl_plot) <- names(orig_plot)
 
-# Now save.
+# Example plot for blog.
+plot_grid(orig_plot[["Birmingham"]], hex_plot[["Birmingham"]], dorl_plot[["Birmingham"]], nrow = 1,
+          labels = c("Original", "Hex", "Dorling"), label_y = 0.9, label_x = 0.2, label_colour = "snow", label_size = 16,
+          rel_widths = c(1,1,0.95)) + #, scale = 0.9
+  theme(plot.background = element_rect(fill ="grey12"))
+
+# Save.
+ggsave(filename = "visuals/mod/example_birm.png", height = 7, width = 21)
+
+# Now save all of them.
 lapply(names(orig_plot), function(i)
   ggsave(plot = orig_plot[[i]], filename = paste0("visuals/mod/", i, "_original", ".png"),
          height = 7, width = 7, unit = "in")

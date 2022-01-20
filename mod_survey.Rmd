@@ -39,7 +39,7 @@ Do people make **worse** estimates about the underlying data when observing the 
 <Br>
 
 ```{r, echo=FALSE, fig.align = "center", out.width="900px"}
-knitr::include_graphics("img/motivation_maps.png")
+knitr::include_graphics("visuals/mod/example_birm.png")
 ```
 
 
