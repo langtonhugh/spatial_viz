@@ -82,20 +82,42 @@ pops_survey_df <- survey_clean_df %>%
   select(-ID) %>% 
   mutate(diff_estimate   = estimate-real_estimate)
 
+# For the graph.
+real_estimates_df <- pops_survey_df %>% 
+  distinct(la_map_question, la, real_estimate)
+
+# Create factor ordering for later.
+lmq_fac_vec <- c("birmingham_original_9",
+                 "burnley_original_5",
+                 "hartlepool_original_1",
+                 "birmingham_hex_6",
+                 "burnley_hex_3",
+                 "hartlepool_hex_7",
+                 "birmingham_dorling_2",
+                 "burnley_dorling_8",
+                 "hartlepool_dorling_4")
+
+
 # Bind rows and reorder factor for the plot.
+# See also below. A bit repetitive but I tried lots of different ways of doing
+# basically the same thing...
 survey_clean_pops_df <- survey_clean_df %>% 
   rename(real_estimate = estimate) %>% # confusing tbh.
   bind_rows(pops_df) %>% 
-  mutate(la_map_question = fct_relevel(la_map_question,
-                                       "birmingham_original_9",
-                                       "burnley_original_5",
-                                       "hartlepool_original_1",
-                                       "birmingham_hex_6",
-                                       "burnley_hex_3",
-                                       "hartlepool_hex_7",
-                                       "birmingham_dorling_2",
-                                       "burnley_dorling_8",
-                                       "hartlepool_dorling_4"))
+  mutate(la_map_question = fct_relevel(la_map_question, lmq_fac_vec))
+
+# Find the mean of estimates in its own df.
+mean_estimates_df <- survey_clean_pops_df %>% 
+  filter(ID != 999) %>% 
+  group_by(la_map_question, la) %>% 
+  summarise(mean_estimates = mean(real_estimate)) %>% 
+  arrange(la_map_question)
+
+# Join to simplify ggplot code.
+estimates_df <- real_estimates_df %>% 
+  arrange(la_map_question) %>%
+  left_join(mean_estimates_df) %>% 
+  mutate(la_map_question = fct_relevel(la_map_question, lmq_fac_vec))
 
 # How many are we going to plot? Take off one because it's the 'real' ID of 999!
 # length(unique(survey_clean_pops_df$ID)) # 65-1=64
@@ -103,15 +125,17 @@ survey_clean_pops_df <- survey_clean_df %>%
 # Plot. Note we do remove the real estimate first.
 ggplot() +
   geom_density(data = filter(survey_clean_pops_df, ID != 999), aes(x = real_estimate, fill = la, colour = la)) +
-  geom_vline  (data = filter(survey_clean_pops_df, la == "hartlepool",  ID != 999), aes(xintercept = hart_pop), linetype = "dotted", colour = "black") +
-  geom_vline  (data = filter(survey_clean_pops_df, la == "birmingham",  ID != 999), aes(xintercept = birm_pop), linetype = "dotted", colour = "black") +
-  geom_vline  (data = filter(survey_clean_pops_df, la == "burnley"   ,  ID != 999), aes(xintercept = burn_pop), linetype = "dotted", colour = "black") +
+  geom_vline  (data = estimates_df, aes(xintercept = real_estimate, group = la_map_question), linetype = "dotted") +
+  # geom_vline  (data = estimates_df, aes(xintercept = mean_estimates, group = la_map_question), linetype = "dotted") +
+  # geom_rect   (data = estimates_df, aes(xmin = mean_estimates, xmax = real_estimate,
+  #                                       ymin = 0, ymax = 0.15), alpha = 0.2) +
   facet_wrap(~la_map_question, nrow = 3, scales = "fixed") +
   scale_fill_viridis_d() +
   scale_colour_viridis_d() +
   labs(x = "Distribution of respondent estimates. Dotted line represents reality", y = NULL) +
   theme_bw() +
-  theme(legend.position = "none")
+  theme(legend.position = "none",
+        strip.background = element_rect(fill = "transparent"))
 
 # Join with individual data.
 ind_pops_diff_df <- survey_clean_pops_df %>% 
@@ -133,27 +157,31 @@ ind_pops_diff_df <- survey_clean_pops_df %>%
 # max(ind_pops_diff_df$ID.x) # no 999
 # length(unique(ind_pops_diff_df$ID.x)) # 64
 
-# Plot estimated points.
 ggplot() +
   geom_vline(xintercept = 0, linetype = "dotted") +
-  geom_jitter(data = ind_pops_diff_df, mapping = aes(x = ind_diff_estimate,
-                                                     y = la_map_question,
-                                                     fill = la),
-              alpha = 0.5, height = 0.3, pch = 21)  +
-  geom_errorbar(data = pops_survey_df,
-                mapping = aes(x = diff_estimate, xmin = 0, ymin = la_map_question,
-                              ymax = la_map_question),
-                size = 10) +
-  geom_segment(data = pops_survey_df,
-               mapping = aes(x = 0, xend = diff_estimate,
-                             yend = la_map_question, y = la_map_question),
-               size = 1) +
-  scale_x_continuous(limits = c(-60, 60)) +
-  scale_fill_viridis_d() +
-  labs(x = "Difference between respondent estimates and reality",
-       y = NULL) +
-  theme_bw() +
-  theme(legend.position = "none") +
-  annotate(geom = "text", x = 60, y = 2, label = "O r i g i n a l", angle = -90) +
-  annotate(geom = "text", x = 60, y = 5, label = "H e x"     , angle = -90) +
-  annotate(geom = "text", x = 60, y = 8, label = "D o r l i n g" , angle = -90)
+  geom_boxplot(data = ind_pops_diff_df, aes(x = ind_diff_estimate, y = la_map_question))
+
+# Plot estimated points.
+# ggplot() +
+#   geom_vline(xintercept = 0, linetype = "dotted") +
+#   geom_jitter(data = ind_pops_diff_df, mapping = aes(x = ind_diff_estimate,
+#                                                      y = la_map_question,
+#                                                      fill = la),
+#               alpha = 0.5, height = 0.3, pch = 21)  +
+#   geom_errorbar(data = pops_survey_df,
+#                 mapping = aes(x = diff_estimate, xmin = 0, ymin = la_map_question,
+#                               ymax = la_map_question),
+#                 size = 10) +
+#   geom_segment(data = pops_survey_df,
+#                mapping = aes(x = 0, xend = diff_estimate,
+#                              yend = la_map_question, y = la_map_question),
+#                size = 1) +
+#   scale_x_continuous(limits = c(-60, 60)) +
+#   scale_fill_viridis_d() +
+#   labs(x = "Difference between respondent estimates and reality",
+#        y = NULL) +
+#   theme_bw() +
+#   theme(legend.position = "none") +
+#   annotate(geom = "text", x = 60, y = 2, label = "O r i g i n a l", angle = -90) +
+#   annotate(geom = "text", x = 60, y = 5, label = "H e x"     , angle = -90) +
+#   annotate(geom = "text", x = 60, y = 8, label = "D o r l i n g" , angle = -90)
