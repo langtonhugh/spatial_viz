@@ -1,6 +1,6 @@
 # spatial_viz
 
-This repo contains an R project and associated scripts/workspace to replicate maps used in an [article](https://theconversation.com/even-the-most-beautiful-maps-can-be-misleading-126474) for The Conversation website.
+This repo contains an R project and associated scripts/workspace to reproduce maps used in an [article](https://theconversation.com/even-the-most-beautiful-maps-can-be-misleading-126474) for The Conversation website.
 
 As of January 2022 it includes some material for a mini-survey that myself and [Reka Solymosi](https://rekadata.net/) conducted for a [presentation](https://rekadata.net/talks/mod_presentation.html#1) for the Ministry of Defence.
 
